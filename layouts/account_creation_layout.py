@@ -20,7 +20,7 @@ def create_account_creation_layout():
     ]),
     dbc.Row([
         dbc.Col([
-            html.A("Back to Login", href="/", className="mt-4 text-muted", style={"width" : "100%"})
+            dbc.Button("Back to Login", href="/", className="btn btn-primary mt-4", style={"width" : "100%"})
         ], width=2, style={"margin" : "auto"})
     ])
 ], fluid=True)

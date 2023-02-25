@@ -14,25 +14,21 @@ import pandas
 from layouts.login_layout import *
 from layouts.account_creation_layout import *
 from layouts.home_layout import *
+from layouts.analytics_layout import *
+from layouts.settings_layout import *
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
 title = dcc.Markdown(children="# **Budgeteer**")
 
-#########
-# LOGIN #
-#########
+
+
 login_layout = create_login_layout()
-
-
-####################
-# ACCOUNT CREATION #
-####################
 account_creation_layout = create_account_creation_layout()
-
-# Define the main page layout
 home_layout = create_home_layout()
+analyze_layout = create_analytics_layout()
+settings_layout = create_settings_layout()
 
 
 # Define the callback for login validation
@@ -46,7 +42,7 @@ def validate_login(login, username, password):
     # Check if the username and password are valid
 
     if username == '1' and password == '1':
-        return dcc.Location(pathname='/main', id='main')
+        return dcc.Location(pathname='/home', id='home')
     elif username == None and password == None:
         pass
     else:
@@ -74,27 +70,33 @@ def create_account(n_clicks, new_username, new_password, confirm_password):
         return "Username Cannot Be Empty"
     else:
         # Code to create new account
-        return dcc.Location(pathname="/", id="main")
+        return dcc.Location(pathname="/", id="home")
 
-# Define the app layout
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
-])
 
-# # Define the callbacks to render different pages #
-@app.callback(Output('page-content', 'children'),
-Input('url', 'pathname'))
-
+@app.callback(
+    Output('page-content', 'children'),
+    Input('url', 'pathname'),
+)
 def display_page(pathname):
     if pathname == '/':
         return login_layout
     elif pathname == '/create_account':
         return account_creation_layout
-    elif pathname == '/main':
+    elif pathname == '/home':
         return home_layout
+    elif pathname == '/analyze':
+        return analyze_layout
+    elif pathname == '/settings':
+        return settings_layout
     else:
         return '404 Page not found'
+    
+
+app.layout = html.Div([
+dcc.Location(id='url', refresh=False),
+html.Div(id='page-content')
+])
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
