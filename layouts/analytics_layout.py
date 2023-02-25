@@ -4,7 +4,7 @@ from dash import html, dcc
 def create_analytics_layout():
     return dbc.Container([
         dbc.Row([
-            dbc.Col([html.H1("Analyze")], width=12),
+            dbc.Col([html.H1("Analytics")], width=12),
         ]),
         dbc.Row([
             dbc.Col([

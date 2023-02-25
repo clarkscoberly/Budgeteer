@@ -29,7 +29,7 @@ def create_home_layout():
                         ])], className='mb-4')
                 ]),
                 dbc.Row([
-                    html.Button('Create Envelope', id='create-envelope-button', className='btn btn-primary mt-2')
+                    dbc.Button('Create Envelope', id='create-envelope-button', className='btn btn-primary mt-2', href="/create_envelope")
                 ])
             ], width=3),
             dbc.Col([
@@ -39,11 +39,6 @@ def create_home_layout():
                 dcc.Graph(id='graph3', figure=placeholder)
             ], width=4),
         ]),
-        dbc.Row([
-            dbc.Col([
-                html.A("Log Out", href="/", className="mt-4 text-muted")
-            ], width=2)
-        ])
     ], fluid=True)
 
 
