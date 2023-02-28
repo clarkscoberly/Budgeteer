@@ -22,7 +22,7 @@ from layouts.envelope_edit_layout import *
 from layouts.add_item_layout import *
 from layouts.edit_item_layout import *
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
 
 title = dcc.Markdown(children="# **Budgeteer**")
@@ -91,7 +91,7 @@ def display_page(pathname):
         return account_creation_layout
     elif pathname == '/home':
         return home_layout
-    elif pathname == '/analyze':
+    elif pathname == '/analytics':
         return analyze_layout
     elif pathname == '/settings':
         return settings_layout
@@ -116,4 +116,4 @@ html.Div(id='page-content')
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

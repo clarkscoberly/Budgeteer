@@ -1,19 +1,11 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
+from layouts.navbar_layout import *
 
 def create_analytics_layout():
     return dbc.Container([
         dbc.Row([
-            dbc.Col([html.H1("Analytics")], width=12),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Row(html.Nav([
-                    html.A('Home', href='/home', className='nav-link'),
-                    html.A('Analytics', href='/analyze', className='nav-link'),
-                    html.A('Settings', href='/settings', className='nav-link')
-                    ], className='navbar navbar-expand-lg navbar-light bg-light'),),
-            ])
+            dbc.Col(create_navbar("Analytics")),
         ]),
         dbc.Row([
             dbc.Col([
