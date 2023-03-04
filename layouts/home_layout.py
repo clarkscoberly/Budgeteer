@@ -1,7 +1,6 @@
-import json
 import plotly.express as px
 import dash_bootstrap_components as dbc
-from dash import html, dcc, dash_table
+from dash import html, dash_table, dash
 from layouts.navbar_layout import *
 
 # Load some sample data
@@ -17,7 +16,6 @@ home_envelope_data_table = dash_table.DataTable(
     style_data={'border': '1px solid black'},
     style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'},
     style_cell={'textAlign': 'center'},
-    row_selectable="single"
 )
 
 def create_home_layout():
@@ -42,3 +40,13 @@ def create_home_layout():
             dbc.Col(home_envelope_data_table, width=9),
         ]),
     ], fluid=True)
+
+
+def enter_selected_envelope(active_cell, data):
+    if not active_cell:
+        return dash.no_update
+    
+    row_id = active_cell['row']
+    row_data = data[row_id]
+
+    return '/envelope', f'?id={row_data["species_id"]}'

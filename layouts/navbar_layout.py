@@ -20,17 +20,17 @@ def create_navbar(nav_title):
                         dbc.NavItem(dbc.NavLink("Home", href="/home")),
                         dbc.NavItem(dbc.NavLink("Analytics", href="/analytics")),
                         dbc.NavItem(dbc.NavLink("Settings", href="/settings")),
-                        dbc.DropdownMenu(
-                            [
-                                dbc.DropdownMenuItem("Action", href="#"),
-                                dbc.DropdownMenuItem("Another action", href="#"),
-                                # dbc.DropdownMenuItem(divider=True),
-                                dbc.DropdownMenuItem("Separated link", href="#"),
-                            ],
-                            nav=True,
-                            in_navbar=True,
-                            label="Dropdown",
-                        ),
+                        # dbc.DropdownMenu(
+                        #     [
+                        #         dbc.DropdownMenuItem("Action", href="#"),
+                        #         dbc.DropdownMenuItem("Another action", href="#"),
+                        #         # dbc.DropdownMenuItem(divider=True),
+                        #         dbc.DropdownMenuItem("Separated link", href="#"),
+                        #     ],
+                        #     nav=True,
+                        #     in_navbar=True,
+                        #     label="Dropdown",
+                        # ),
                     ],
                     className="ml-auto",
                     navbar=True,
