@@ -10,3 +10,4 @@ class User:
         self.user_id = None
         self.current_envelope = None
         self.current_item = None
+        print("Successfully Logged Out")

@@ -33,5 +33,6 @@ def create_settings_layout():
                 ], className='mt-4'),
                 dbc.Button('Log Out', id="logout_button", className='btn btn-primary mt-4', href="/")
             ], width=6, style={'margin': 'auto'})
-        ])
+        ]),
+        html.H1(id="settings_placeholder")
     ], fluid=True)

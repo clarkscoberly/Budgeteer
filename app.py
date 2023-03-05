@@ -45,6 +45,9 @@ add_item_layout = create_add_item_layout()
 edit_item_layout = create_edit_item_layout()
 
 
+#############
+# LOGIN/OUT #
+#############
 @app.callback(
     Output('error-msg', 'children'),
     Input('login-button', 'n_clicks'),
@@ -87,10 +90,23 @@ def create_account(n_clicks, new_username, new_password, confirm_password):
         else:
             return "Username Already Exists"
 
+@app.callback(
+    Output("settings_placeholder", "children"),
+    Input("logout_button", "n_clicks"),
+)
+def logout(n_clicks):
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if triggered_id == "logout_button":
+        db.user.log_out()
+
+    return ""
+    
 
 
-###
-# ENVELOPE CALLBACKS
+
+######################
+# ENVELOPE CALLBACKS #
+######################
 @app.callback(
     Output('url', 'pathname'),
     Output('url', 'search'),
@@ -129,6 +145,9 @@ def create_envelope(n_clicks, name, budget, frequency, note):
             db.create_envelope(name, budget, frequency, note)
             return ""
 
+###################
+# ITEMS CALLBACKS #
+###################
 
 @app.callback(
     Output('page-content', 'children'),
