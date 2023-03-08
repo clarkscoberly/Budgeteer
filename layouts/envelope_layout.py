@@ -15,7 +15,7 @@ envelope_items_data_table = dash_table.DataTable(
     data=df.to_dict('records'),
     style_data={'border': '1px solid black'},
     style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'},
-    style_cell={'textAlign': 'center'}
+    style_cell={'textAlign': 'center'},
 )
 
 
@@ -38,7 +38,8 @@ def create_envelope_layout():
                 dcc.Graph(id='graph1', figure=placeholder),
                 dcc.Graph(id='graph2', figure=placeholder)
             ], width=6),
-        ])
+        ]),
+        html.H1(id="envelope_item_selection_placeholder")
     ], fluid=True)
 
 

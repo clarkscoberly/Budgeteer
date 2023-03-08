@@ -107,26 +107,43 @@ def logout(n_clicks):
 ######################
 # ENVELOPE CALLBACKS #
 ######################
-@app.callback(
-    Output('url', 'pathname'),
-    Output('url', 'search'),
-    Input('home_envelope_data_table', 'active_cell'),
-    Input('envelope_items_data_table', 'active_cell'),
-    State('home_envelope_data_table', 'data'),
-    State('envelope_items_data_table', 'data')
-)
-def enter_selected_envelope_callback(home_cell, item_cell, home_data, item_data):
-    if not ctx.triggered:
-        return dash.no_update, dash.no_update
-    
 
+# Change the following so that you don't "return" anything and this is changed into two callbacks
+# This way you can have it be on both.
+@app.callback(
+    Output('home_selected_envelope_placeholder', 'children'),
+    Input('home_envelope_data_table', 'active_cell'),
+    State('home_envelope_data_table', 'data'),
+)
+def enter_selected_envelope_callback(home_cell, home_data):
+    if not ctx.triggered:
+        PreventUpdate
+    
     table_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if table_id == "home_envelope_data_table":
-        return enter_selected_envelope(home_cell, home_data)
+        path, data = enter_selected_envelope(home_cell, home_data) # Pass Data to db
+        dcc.Location(pathname=path)
 
-    elif table_id == "envelope_items_data_table":
-        return enter_selected_item(item_cell, item_data)
+    return ""
+    
+@app.callback(
+    Output('envelope_item_selection_placeholder', 'children'),
+    Input('envelope_items_data_table', 'active_cell'),
+    State('envelope_items_data_table', 'data'),
+)
+def enter_selected_item_callback(item_cell, item_data):
+    if not ctx.triggered:
+        PreventUpdate
+
+    table_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if table_id == "envelope_items_data_table":
+        path, data = enter_selected_item(item_cell, item_data) # Pass Data to db
+        dcc.Location(pathname=path)
+
+    return ""
+
 
 @app.callback(
     Output("envelope_creation_placeholder", "children"),
@@ -152,6 +169,7 @@ def create_envelope(n_clicks, name, budget, frequency, note):
 @app.callback(
     Output('page-content', 'children'),
     Input('url', 'pathname'),
+    Input()
 )
 def display_page(pathname):
     if pathname == '/':

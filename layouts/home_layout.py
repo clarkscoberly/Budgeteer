@@ -20,13 +20,9 @@ home_envelope_data_table = dash_table.DataTable(
 
 def create_home_layout():
     return dbc.Container([
-        dbc.Row([
-            # dbc.Col([html.H1("Home")], width=12),
-            dbc.Col(create_navbar("Home")),
-        ]),
+        dbc.Row(dbc.Col(create_navbar("Home"))),
         dbc.Row([
             dbc.Col([
-                # dbc.Row(create_navbar()),
                 dbc.Row([
                     dbc.Card([
                         dbc.CardBody([
@@ -39,6 +35,7 @@ def create_home_layout():
             ], width=3),
             dbc.Col(home_envelope_data_table, width=9),
         ]),
+        html.H1(id="home_selected_envelope_placeholder")
     ], fluid=True)
 
 
