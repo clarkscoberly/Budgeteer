@@ -54,7 +54,7 @@ edit_item_layout = create_edit_item_layout()
     State('username', 'value'),
     State('password', 'value')
 )
-def validate_login(login, username, password):
+def login_user(login, username, password):
 
     # Check if the username and password are valid
     if db.login_user(username, password) != None:    
@@ -94,7 +94,7 @@ def create_account(n_clicks, new_username, new_password, confirm_password):
     Output("settings_placeholder", "children"),
     Input("logout_button", "n_clicks"),
 )
-def logout(n_clicks):
+def logout_user(n_clicks):
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if triggered_id == "logout_button":
         db.user.log_out()
@@ -107,7 +107,6 @@ def logout(n_clicks):
 ######################
 # ENVELOPE CALLBACKS #
 ######################
-
 # Change the following so that you don't "return" anything and this is changed into two callbacks
 # This way you can have it be on both.
 @app.callback(
