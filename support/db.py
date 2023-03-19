@@ -1,7 +1,9 @@
 import firebase_admin
 from firebase_admin import credentials, db, firestore, auth
 
-from support.user import User
+from support.user import user
+
+import pandas as pd
 
 cred = credentials.Certificate('C:\\Users\\cober\\Desktop\\Budgeteer\\support\\budgeteer-4c866-firebase-adminsdk-4zcz1-75e8230e72.json')
 firebase_admin.initialize_app(cred, {
@@ -13,7 +15,7 @@ db = firestore.client()
 class Database:
 
     def __init__(self):
-        self.user = User() # A blank user that will carry the user's id for the duration of the application. IF THEY LOG OUT THE USER NEEDS TO GET WIPED.
+        self.user = user # A blank user that will carry the user's id for the duration of the application. IF THEY LOG OUT THE USER NEEDS TO GET WIPED.
         pass
 
     def create_user(self, username: str, password: str):
@@ -41,12 +43,23 @@ class Database:
         
         for user_ref in results:
             print("User exists")
-
+            # self.user.
+            
             self.user.user_id = user_ref.id
+
+            self.user.envelopes_df = self.get_envelopes_for_user()
             return user_ref.id
         
         print("That user does not exist")
         return None
+        # user_id = create_user("Clark", "1")
+        # create_envelope(user_id, "Groceries", 100.00, "daily", "This is a test")
+
+        # envelope_id = get_envelope_id_by_name(user_id, "Groceries")
+
+        # add_item_to_envelope(user_id, envelope_id, "In-N-Out", 100.00, "TEST ITEM")
+
+        # print(get_envelopes_for_user(user_id))
 
 
     def create_envelope(self, envelope_name: str, budget: float, frequency: str, note: str):
@@ -187,25 +200,31 @@ class Database:
         return envelope_data
 
     def get_envelopes_for_user(self):
-        # check if the user exists
-        user_ref = db.collection('users').document(self.user.user_id)
-        if not user_ref.get().exists:
-            print('User does not exist')
-            return
-        
-        # get all envelopes for the user
-        envelopes_ref = user_ref.collection('envelopes').get()
-        envelopes_data = []
-        for envelope in envelopes_ref:
-            envelope_data = self._get_envelope_data(self.user.user_id, envelope.id)
-            envelopes_data.append(envelope_data)
+
+        try:
+            # check if the user exists
+            user_ref = db.collection('users').document(self.user.user_id)
+            if not user_ref.get().exists:
+                print('User does not exist')
+                return
             
-        return envelopes_data
+            # get all envelopes for the user
+            envelopes_ref = user_ref.collection('envelopes').get()
+            envelopes_data = []
+            for envelope in envelopes_ref:
+                envelope_data = self._get_envelope_data(envelope.id)
+                envelopes_data.append(envelope_data)
+
+            envelopes_df = pd.DataFrame(envelopes_data)
+
+        except Exception as e:
+            print("There was an error", e)
+            
+        return envelopes_df
 
 
 # user_id = create_user("Clark", "1")
 # create_envelope(user_id, "Groceries", 100.00, "daily", "This is a test")
-
 # user_id = login_user("Clark", "1")
 # print(get_envelopes_for_user(user_id))
 # envelope_id = get_envelope_id_by_name(user_id, "Groceries")

@@ -2,21 +2,15 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash import html, dash_table, dash
 from layouts.navbar_layout import *
-
-# Load some sample data
-df = px.data.iris()
-
-# Create a scatter plot using the sample data
-placeholder = px.scatter(df, x='sepal_width', y='sepal_length')
+from support.user import user
 
 home_envelope_data_table = dash_table.DataTable(
     id='home_envelope_data_table',
-    columns=[{'name': i, 'id': i} for i in df.columns],
-    data=df.to_dict('records'),
     style_data={'border': '1px solid black'},
     style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'},
     style_cell={'textAlign': 'center'},
 )
+
 
 def create_home_layout():
     return dbc.Container([
@@ -46,4 +40,4 @@ def enter_selected_envelope(active_cell, data):
     row_id = active_cell['row']
     row_data = data[row_id]
 
-    return '/envelope', f'?id={row_data["species_id"]}'
+    return '/envelope', row_data

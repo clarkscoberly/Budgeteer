@@ -5,15 +5,15 @@ Creation Date: 2/18/23
 Purpose: To provide a means to encourage people to budget through an easy to use free application
 """
 
-from dash import Dash, dcc, html, Output, Input, State, callback_context as ctx
+from dash import Dash, dcc, html, Output, Input, State, ctx, dash_table, dash
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import plotly.express as px
-import pandas
-
+import pandas as pd
 
 from layouts.login_layout import *
 from layouts.account_creation_layout import *
+
 from layouts.home_layout import *
 from layouts.analytics_layout import *
 from layouts.settings_layout import *
@@ -23,10 +23,10 @@ from layouts.envelope_edit_layout import *
 from layouts.add_item_layout import *
 from layouts.edit_item_layout import *
 
-from layouts.home_layout import home_envelope_data_table
-from layouts.envelope_layout import envelope_items_data_table
+# from layouts.home_layout import home_envelope_data_table
+# from layouts.envelope_layout import envelope_items_data_table
 
-from support.db import Database
+from support.db import Database, user
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 db = Database() # database control.
@@ -35,8 +35,10 @@ title = dcc.Markdown(children="# **Budgeteer**")
 
 login_layout = create_login_layout()
 account_creation_layout = create_account_creation_layout()
+
+
 home_layout = create_home_layout()
-analyze_layout = create_analytics_layout()
+analytics_layout = create_analytics_layout()
 settings_layout = create_settings_layout()
 envelope_layout = create_envelope_layout()
 envelope_creation_layout = create_envelope_creation_layout()
@@ -57,7 +59,7 @@ edit_item_layout = create_edit_item_layout()
 def login_user(login, username, password):
 
     # Check if the username and password are valid
-    if db.login_user(username, password) != None:    
+    if db.login_user(username, password) != None:   
         return dcc.Location(pathname='/home', id='home')
     elif username == None and password == None:
         pass
@@ -109,6 +111,24 @@ def logout_user(n_clicks):
 ######################
 # Change the following so that you don't "return" anything and this is changed into two callbacks
 # This way you can have it be on both.
+
+@app.callback(
+    Output('home_envelope_data_table', "data"),
+    Output('home_envelope_data_table', "columns"),
+    Input('url', 'pathname'),
+)
+def populate_envelope_with_data(url):
+    url = url.split('/')[-1]
+    if url != "home":
+        PreventUpdate
+
+    else:
+        data = user.envelopes_df[["name", "budget"]].to_dict("records")
+        columns = [{"name": "Envelope Name", "id": "name"},
+                    {"name": "Budget", "id": "budget"}]
+        return data, columns
+
+
 @app.callback(
     Output('home_selected_envelope_placeholder', 'children'),
     Input('home_envelope_data_table', 'active_cell'),
@@ -116,15 +136,15 @@ def logout_user(n_clicks):
 )
 def enter_selected_envelope_callback(home_cell, home_data):
     if not ctx.triggered:
-        PreventUpdate
+        raise PreventUpdate
     
     table_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
     if table_id == "home_envelope_data_table":
         path, data = enter_selected_envelope(home_cell, home_data) # Pass Data to db
-        dcc.Location(pathname=path)
+        db.user.current_envelope = data
+        return dcc.Location(id="home_selected_envelope_location", pathname=path)
 
-    return ""
+    raise PreventUpdate
     
 @app.callback(
     Output('envelope_item_selection_placeholder', 'children'),
@@ -133,15 +153,16 @@ def enter_selected_envelope_callback(home_cell, home_data):
 )
 def enter_selected_item_callback(item_cell, item_data):
     if not ctx.triggered:
-        PreventUpdate
+        raise PreventUpdate
 
     table_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if table_id == "envelope_items_data_table":
-        path, data = enter_selected_item(item_cell, item_data) # Pass Data to db
-        dcc.Location(pathname=path)
 
-    return ""
+        path, data = enter_selected_item(item_cell, item_data) # Pass Data to db
+        return dcc.Location(id="envelope_item_selection_location", pathname=path)
+
+    raise PreventUpdate
 
 
 @app.callback(
@@ -159,6 +180,7 @@ def create_envelope(n_clicks, name, budget, frequency, note):
         triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if triggered_id == "save_envelope_button":
             db.create_envelope(name, budget, frequency, note)
+            user.envelopes_df = db.get_envelopes_for_user()
             return ""
 
 ###################
@@ -168,7 +190,6 @@ def create_envelope(n_clicks, name, budget, frequency, note):
 @app.callback(
     Output('page-content', 'children'),
     Input('url', 'pathname'),
-    Input()
 )
 def display_page(pathname):
     if pathname == '/':
@@ -178,7 +199,7 @@ def display_page(pathname):
     elif pathname == '/home':
         return home_layout
     elif pathname == '/analytics':
-        return analyze_layout
+        return analytics_layout
     elif pathname == '/settings':
         return settings_layout
     elif pathname == '/envelope':
@@ -193,7 +214,7 @@ def display_page(pathname):
         return add_item_layout
     else:
         return '404 Page not found'
-    
+
 
 app.layout = html.Div([
 dcc.Location(id='url', refresh=False),

@@ -52,4 +52,4 @@ def enter_selected_item(active_cell, data):
     row_id = active_cell['row']
     row_data = data[row_id]
 
-    return '/edit_item', f'?id={row_data["species_id"]}'
+    return '/edit_item', row_data
