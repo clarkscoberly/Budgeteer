@@ -37,14 +37,14 @@ login_layout = create_login_layout()
 account_creation_layout = create_account_creation_layout()
 
 
-home_layout = create_home_layout()
-analytics_layout = create_analytics_layout()
-settings_layout = create_settings_layout()
-envelope_layout = create_envelope_layout()
-envelope_creation_layout = create_envelope_creation_layout()
-envelope_edit_layout = create_envelope_edit_layout()
-add_item_layout = create_add_item_layout()
-edit_item_layout = create_edit_item_layout()
+# home_layout = create_home_layout()
+# analytics_layout = create_analytics_layout()
+# settings_layout = create_settings_layout()
+# envelope_layout = create_envelope_layout()
+# envelope_creation_layout = create_envelope_creation_layout()
+# envelope_edit_layout = create_envelope_edit_layout()
+# add_item_layout = create_add_item_layout()
+# edit_item_layout = create_edit_item_layout()
 
 
 #############
@@ -140,7 +140,7 @@ def enter_selected_envelope_callback(home_cell, home_data):
     
     table_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if table_id == "home_envelope_data_table":
-        path, data = enter_selected_envelope(home_cell, home_data) # Pass Data to db
+        path, data = enter_selected_envelope(home_cell, home_data)
         db.user.current_envelope = data
         return dcc.Location(id="home_selected_envelope_location", pathname=path)
 
@@ -159,7 +159,8 @@ def enter_selected_item_callback(item_cell, item_data):
 
     if table_id == "envelope_items_data_table":
 
-        path, data = enter_selected_item(item_cell, item_data) # Pass Data to db
+        path, data = enter_selected_item(item_cell, item_data)
+        db.user.current_item = data
         return dcc.Location(id="envelope_item_selection_location", pathname=path)
 
     raise PreventUpdate
@@ -187,6 +188,34 @@ def create_envelope(n_clicks, name, budget, frequency, note):
 # ITEMS CALLBACKS #
 ###################
 
+# @app.callback(
+#     Output('home_envelope_data_table', "data"),
+#     Output('home_envelope_data_table', "columns"),
+#     Input('url', 'pathname'),
+# )
+# def populate_envelope_with_data(url):
+#     url = url.split('/')[-1]
+#     if url != "home":
+#         PreventUpdate
+
+#     else:
+#         data = user.envelopes_df[["name", "budget"]].to_dict("records")
+#         columns = [{"name": "Envelope Name", "id": "name"},
+#                     {"name": "Budget", "id": "budget"}]
+#         return data, columns
+
+
+
+
+
+
+
+
+
+
+####################
+# DISPLAY CALLBACK #
+####################
 @app.callback(
     Output('page-content', 'children'),
     Input('url', 'pathname'),
@@ -197,21 +226,21 @@ def display_page(pathname):
     elif pathname == '/create_account':
         return account_creation_layout
     elif pathname == '/home':
-        return home_layout
+        return create_home_layout()
     elif pathname == '/analytics':
-        return analytics_layout
+        return create_analytics_layout()
     elif pathname == '/settings':
-        return settings_layout
+        return create_settings_layout()
     elif pathname == '/envelope':
-        return envelope_layout
+        return create_envelope_layout(db.user.current_envelope["name"], db.user.current_envelope["budget"])
     elif pathname == '/create_envelope':
-        return envelope_creation_layout
+        return create_envelope_creation_layout()
     elif pathname == '/edit_envelope':
-        return envelope_edit_layout
+        return create_envelope_edit_layout()
     elif pathname == '/edit_item':
-        return edit_item_layout
+        return create_edit_item_layout()
     elif pathname == '/add_item':
-        return add_item_layout
+        return create_add_item_layout()
     else:
         return '404 Page not found'
 
@@ -223,4 +252,4 @@ html.Div(id='page-content')
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

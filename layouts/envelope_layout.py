@@ -2,7 +2,6 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash import html, dcc, dash_table, dash
 
-
 # Load some sample data
 df = px.data.iris()
 
@@ -19,15 +18,24 @@ envelope_items_data_table = dash_table.DataTable(
 )
 
 
-
-def create_envelope_layout():
+def create_envelope_layout(title, budget):
     return dbc.Container([
         dbc.Row([
-            dbc.Col([html.H1("Envelope - Edit to Change Based on Envelope")], width=12),
+            dbc.Col(html.H1(title), width=12),
+            
         ]),
         dbc.Row([
             dbc.Col([
                 dbc.Row([
+                    dbc.Col(dbc.Card(
+                        [
+                            html.H4("Budget", className="card-title"),
+                            html.P(budget, className="card-text"),
+                        ],
+                        body=True,
+                        color="info",
+                        inverse=True,
+                    )),
                     dbc.Col(dbc.Button('Home', className='btn btn-primary mt-2', style={"width" : "100%"}, href="/home")),
                     dbc.Col(dbc.Button('Edit Envelope', id='edit_envelope_button', className='btn btn-primary mt-2', style={"width" : "100%"}, href="/edit_envelope")),
                     dbc.Col(dbc.Button('Add Item', id='add_item_button', className='btn btn-primary mt-2', style={"width" : "100%"}, href="/add_item"))

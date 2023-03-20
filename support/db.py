@@ -50,16 +50,7 @@ class Database:
             self.user.envelopes_df = self.get_envelopes_for_user()
             return user_ref.id
         
-        print("That user does not exist")
         return None
-        # user_id = create_user("Clark", "1")
-        # create_envelope(user_id, "Groceries", 100.00, "daily", "This is a test")
-
-        # envelope_id = get_envelope_id_by_name(user_id, "Groceries")
-
-        # add_item_to_envelope(user_id, envelope_id, "In-N-Out", 100.00, "TEST ITEM")
-
-        # print(get_envelopes_for_user(user_id))
 
 
     def create_envelope(self, envelope_name: str, budget: float, frequency: str, note: str):
@@ -217,18 +208,9 @@ class Database:
 
             envelopes_df = pd.DataFrame(envelopes_data)
 
+            print(envelopes_df)
+
         except Exception as e:
             print("There was an error", e)
             
         return envelopes_df
-
-
-# user_id = create_user("Clark", "1")
-# create_envelope(user_id, "Groceries", 100.00, "daily", "This is a test")
-# user_id = login_user("Clark", "1")
-# print(get_envelopes_for_user(user_id))
-# envelope_id = get_envelope_id_by_name(user_id, "Groceries")
-
-# add_item_to_envelope(user_id, envelope_id, "In-N-Out", 100.00, "TEST ITEM")
-
-# print(get_envelopes_for_user(user_id))
