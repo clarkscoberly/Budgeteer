@@ -18,7 +18,7 @@ class Database:
         self.user = user # A blank user that will carry the user's id for the duration of the application. IF THEY LOG OUT THE USER NEEDS TO GET WIPED.
         pass
 
-    def create_user(self, username: str, password: str):
+    def create_user(self, username, password):
         # check if the username already exists
         user_ref = db.collection('users').where('username', '==', username).get()
         if user_ref:
@@ -36,7 +36,7 @@ class Database:
 
         return new_user_ref.id
 
-    def login_user(self, username: str, password: str):
+    def login_user(self, username, password):
         users_ref = db.collection('users')
         query = users_ref.where('username', '==', username).where('password', '==', password).limit(1)
         results = query.get()
@@ -53,7 +53,7 @@ class Database:
         return None
 
 
-    def create_envelope(self, envelope_name: str, budget: float, frequency: str, note: str):
+    def create_envelope(self, envelope_name, budget, frequency, note):
         # check if the user exists
         user_ref = db.collection('users').document(self.user.user_id)
         if not user_ref.get().exists:
@@ -78,8 +78,10 @@ class Database:
         for doc in envelope_ref:
             return doc.id
 
-    def add_item_to_envelope(self, envelope_id: str, item_name: str, cost: float, note: str):
+    def add_item_to_envelope(self, envelope_name, item_name, cost, note):
         # check if the user and envelope exist
+        envelope_id = self.get_envelope_id_by_name(envelope_name)
+        
         envelope_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id)
         if not envelope_ref.get().exists:
             print('User or envelope does not exist')
@@ -97,8 +99,11 @@ class Database:
         return item_ref.id
 
 
-    def update_envelope_budget(self, envelope_id: str, new_budget: float):
+    def update_envelope_budget(self, envelope_name, new_budget):
+
         # check if the user and envelope exist
+        envelope_id = self.get_envelope_id_by_name(envelope_name)
+
         envelope_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id)
         if not envelope_ref.get().exists:
             print('User or envelope does not exist')
@@ -111,8 +116,10 @@ class Database:
         print('Envelope budget updated successfully')
 
 
-    def update_item_cost(self, envelope_id: str, item_id: str, new_cost: float):
+    def update_item_cost(self, envelope_name, item_id, new_cost):
         # check if the user, envelope and item exist
+        envelope_id = self.get_envelope_id_by_name(envelope_name)
+
         item_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id).collection('items').document(item_id)
         if not item_ref.get().exists:
             print('User, envelope or item does not exist')
@@ -125,8 +132,10 @@ class Database:
         print('Item cost updated successfully')
 
 
-    def delete_item(self, envelope_id: str, item_id: str):
+    def delete_item(self, envelope_name, item_id):
         # check if the user, envelope and item exist
+        envelope_id = self.get_envelope_id_by_name(envelope_name)
+
         item_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id).collection('items').document(item_id)
         if not item_ref.get().exists:
             print('User, envelope or item does not exist')
@@ -136,8 +145,11 @@ class Database:
         item_ref.delete()
         print('Item deleted successfully')
 
-    def delete_envelope(self, envelope_id: str):
+    def delete_envelope(self, envelope_name):
         # check if the user and envelope exist
+        envelope_id = self.get_envelope_id_by_name(envelope_name)
+
+
         envelope_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id)
         if not envelope_ref.get().exists:
             print('User or envelope does not exist')
@@ -163,7 +175,7 @@ class Database:
         user_ref.delete()
         print('User profile deleted successfully')
 
-    def _get_envelope_data(self, envelope_id: str):
+    def _get_envelope_data(self, envelope_id):
         # check if the user and envelope exist
         envelope_ref = db.collection('users').document(self.user.user_id).collection('envelopes').document(envelope_id)
         if not envelope_ref.get().exists:
@@ -208,9 +220,10 @@ class Database:
 
             envelopes_df = pd.DataFrame(envelopes_data)
 
-            print(envelopes_df)
-
         except Exception as e:
             print("There was an error", e)
             
         return envelopes_df
+    
+    def reload_db(self):
+        user.envelopes_df = self.get_envelopes_for_user()

@@ -23,29 +23,15 @@ from layouts.envelope_edit_layout import *
 from layouts.add_item_layout import *
 from layouts.edit_item_layout import *
 
-# from layouts.home_layout import home_envelope_data_table
-# from layouts.envelope_layout import envelope_items_data_table
-
 from support.db import Database, user
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
+app = Dash(__name__, external_stylesheets=[dbc.themes.SLATE])
 db = Database() # database control.
 
 title = dcc.Markdown(children="# **Budgeteer**")
 
 login_layout = create_login_layout()
 account_creation_layout = create_account_creation_layout()
-
-
-# home_layout = create_home_layout()
-# analytics_layout = create_analytics_layout()
-# settings_layout = create_settings_layout()
-# envelope_layout = create_envelope_layout()
-# envelope_creation_layout = create_envelope_creation_layout()
-# envelope_edit_layout = create_envelope_edit_layout()
-# add_item_layout = create_add_item_layout()
-# edit_item_layout = create_edit_item_layout()
-
 
 #############
 # LOGIN/OUT #
@@ -123,6 +109,7 @@ def populate_envelope_with_data(url):
         PreventUpdate
 
     else:
+        db.reload_db()
         data = user.envelopes_df[["name", "budget"]].to_dict("records")
         columns = [{"name": "Envelope Name", "id": "name"},
                     {"name": "Budget", "id": "budget"}]
@@ -142,10 +129,12 @@ def enter_selected_envelope_callback(home_cell, home_data):
     if table_id == "home_envelope_data_table":
         path, data = enter_selected_envelope(home_cell, home_data)
         db.user.current_envelope = data
+
         return dcc.Location(id="home_selected_envelope_location", pathname=path)
 
     raise PreventUpdate
-    
+
+
 @app.callback(
     Output('envelope_item_selection_placeholder', 'children'),
     Input('envelope_items_data_table', 'active_cell'),
@@ -182,29 +171,87 @@ def create_envelope(n_clicks, name, budget, frequency, note):
         if triggered_id == "save_envelope_button":
             db.create_envelope(name, budget, frequency, note)
             user.envelopes_df = db.get_envelopes_for_user()
+            
             return ""
+
+@app.callback(
+    Output("envelope_edit_placeholder", "value"),
+    Input("edit_envelope_button", "n_clicks"),
+    Input("delete_envelope_button", "n_clicks"),
+    Input("edit_envelope_name", "value"),
+    Input("edit_envelope_budget_amount", "value"),
+    Input("edit_envelope_options_dropdown", "value"),
+    Input("edit_envelope_text_area", "value"),
+)
+def edit_envelope(edit, delete, name, budget, option, note):
+    # Currently Updates just the budget and does not do it in "real-time" requiring a reload to realize the changes.
+    if not ctx.triggered:
+        PreventUpdate
+    else:
+        triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        name = db.user.current_envelope["name"]
+        if triggered_id == "edit_envelope_button":
+
+            db.update_envelope_budget(name, budget)
+
+            
+            return ""
+        elif triggered_id == "delete_envelope_button":
+            db.delete_envelope(name)
+            db.reload_db()
+
+            return ""
+
+
 
 ###################
 # ITEMS CALLBACKS #
 ###################
 
-# @app.callback(
-#     Output('home_envelope_data_table', "data"),
-#     Output('home_envelope_data_table', "columns"),
-#     Input('url', 'pathname'),
-# )
-# def populate_envelope_with_data(url):
-#     url = url.split('/')[-1]
-#     if url != "home":
-#         PreventUpdate
+@app.callback(
+    Output('envelope_items_data_table', "data"),
+    Output('envelope_items_data_table', "columns"),
+    Input('url', 'pathname'),
+)
+def populate_envelope_with_data(url):
+    url = url.split('/')[-1]
+    if url != "envelope":
+        PreventUpdate
 
-#     else:
-#         data = user.envelopes_df[["name", "budget"]].to_dict("records")
-#         columns = [{"name": "Envelope Name", "id": "name"},
-#                     {"name": "Budget", "id": "budget"}]
-#         return data, columns
+    else:
+        envelope_items_df = db.user.envelopes_df[db.user.envelopes_df["name"] == db.user.current_envelope["name"]]    
+        items_list = envelope_items_df["items"].iloc[0]
+        items_df = pd.DataFrame(items_list)
+        items_df["date"] = items_df["date"].dt.strftime("%m/%d/%Y")
+
+        data = items_df[["name", "cost", "note", "date"]].to_dict("records")
+        columns=[
+        {"name": "Name", "id": "name"},
+        {"name": "Cost", "id": "cost"},
+        {"name": "Note", "id": "note"},
+        {"name": "Date", "id": "date"}
+        ]
+        return data, columns
 
 
+@app.callback(
+    Output("item_add_placeholder", "value"),
+    Input("envelope_item_name", "value"),
+    Input("envelope_item_cost", "value"),
+    Input("item_text_area", "value"),
+    Input("save_item_button", "n_clicks"),
+
+)
+def create_item_callback(name, cost, note, n_click):
+    id = ctx.triggered_id
+    if id == "save_item_button":
+        envelope_name = db.user.current_envelope["name"]
+        db.add_item_to_envelope(envelope_name, name, cost, note)
+        db.reload_db()
+    else:
+        PreventUpdate
+
+    return ""
 
 
 
@@ -252,4 +299,4 @@ html.Div(id='page-content')
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

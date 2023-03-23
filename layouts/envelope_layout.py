@@ -10,8 +10,6 @@ placeholder = px.scatter(df, x='sepal_width', y='sepal_length')
 
 envelope_items_data_table = dash_table.DataTable(
     id='envelope_items_data_table',
-    columns=[{'name': i, 'id': i} for i in df.columns],
-    data=df.to_dict('records'),
     style_data={'border': '1px solid black'},
     style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'},
     style_cell={'textAlign': 'center'},
