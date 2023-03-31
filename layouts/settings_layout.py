@@ -31,7 +31,8 @@ def create_settings_layout():
                         labelStyle={'display': 'inline-block', 'margin-right': '10px'}
                     )
                 ], className='mt-4'),
-                dbc.Button('Log Out', id="logout_button", className='btn btn-primary mt-4', href="/")
+                dbc.Button('Log Out', id="logout_button", className='btn btn-primary mt-4', href="/"),
+                dbc.Button('Delete Profile', id="delete_user_button", className='btn btn-primary mt-4', href="/", color="warning")
             ], width=6, style={'margin': 'auto'})
         ]),
         html.H1(id="settings_placeholder")

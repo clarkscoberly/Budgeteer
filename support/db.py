@@ -169,11 +169,13 @@ class Database:
         # delete all envelopes for the user
         envelopes = user_ref.collection('envelopes').get()
         for envelope in envelopes:
-            self.delete_envelope(self.user.user_id, envelope.id)
+            envelope_name = envelope.to_dict()['name']
+            self.delete_envelope(envelope_name)
         
         # delete the user
         user_ref.delete()
         print('User profile deleted successfully')
+
 
     def _get_envelope_data(self, envelope_id):
         # check if the user and envelope exist

@@ -23,6 +23,8 @@ from layouts.envelope_edit_layout import *
 from layouts.add_item_layout import *
 from layouts.edit_item_layout import *
 
+from questioneer.automatic_budget import *
+
 from support.db import Database, user
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.SLATE])
@@ -33,9 +35,9 @@ title = dcc.Markdown(children="# **Budgeteer**")
 login_layout = create_login_layout()
 account_creation_layout = create_account_creation_layout()
 
-#############
-# LOGIN/OUT #
-#############
+##################
+# USER CALLBACKS #
+##################
 @app.callback(
     Output('error-msg', 'children'),
     Input('login-button', 'n_clicks'),
@@ -74,7 +76,7 @@ def create_account(n_clicks, new_username, new_password, confirm_password):
     elif new_username != None and new_password != None and confirm_password != None and new_password == confirm_password:
         
         if db.create_user(new_username, new_password) != None:
-            return dcc.Location(pathname="/home", id="home")
+            return dcc.Location(pathname="/questioneer_decision", id="create_account")
         else:
             return "Username Already Exists"
 
@@ -88,7 +90,20 @@ def logout_user(n_clicks):
         db.user.log_out()
 
     return ""
-    
+
+@app.callback(
+    Output("settings_placeholder", "value"),
+    Input("delete_user_button", "n_clicks"),
+)
+def delete_user_profile_callback(n_clicks):
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    print(triggered_id)
+    if triggered_id == "delete_user_button":
+        db.delete_user_profile()
+        return ""
+    else:
+        PreventUpdate
+
 
 
 
@@ -111,8 +126,11 @@ def populate_envelope_with_data(url):
     else:
         db.reload_db()
         data = user.envelopes_df[["name", "budget"]].to_dict("records")
-        columns = [{"name": "Envelope Name", "id": "name"},
-                    {"name": "Budget", "id": "budget"}]
+        columns = [
+            {"name": "Envelope Name", "id": "name"},
+            {"name": "Budget", "id": "budget"},
+            # {"name": "Time Period", "id": "frequency"},
+        ]
         return data, columns
 
 
@@ -211,9 +229,12 @@ def edit_envelope(edit, delete, name, budget, option, note):
 @app.callback(
     Output('envelope_items_data_table', "data"),
     Output('envelope_items_data_table', "columns"),
+    Output('envelope_budget_card', 'children'),
+    Output("envelope_budget_card", "color"),
     Input('url', 'pathname'),
+    State("envelope_budget_card", "children"),
 )
-def populate_envelope_with_data(url):
+def populate_envelope_with_data(url, children_of_card):
     url = url.split('/')[-1]
     if url != "envelope":
         PreventUpdate
@@ -225,13 +246,39 @@ def populate_envelope_with_data(url):
         items_df["date"] = items_df["date"].dt.strftime("%m/%d/%Y")
 
         data = items_df[["name", "cost", "note", "date"]].to_dict("records")
-        columns=[
-        {"name": "Name", "id": "name"},
-        {"name": "Cost", "id": "cost"},
-        {"name": "Note", "id": "note"},
-        {"name": "Date", "id": "date"}
+        try:
+            spending = sum(int(record["cost"]) for record in data)
+            print(spending)
+        except Exception as e:
+            print("Exception in populate_envelope_with_data: ", e)
+            spending = 0
+
+        try:
+            initial_budget = children_of_card[1]['props']['children']
+            print(initial_budget)
+            current_budget = initial_budget - spending
+            if current_budget <= 0:
+                card_color = "danger"
+            elif current_budget > initial_budget / 2:
+                card_color = "info"
+            else:
+                card_color = "warning"
+        except Exception as e:
+            print(e)
+            current_budget = initial_budget
+            card_color = "info"
+
+        card_content = [
+        html.H4("Budget Remaining", className="card-title"),
+        html.P(current_budget, id="envelope_budget_value", className="card-text"),
         ]
-        return data, columns
+        columns=[
+            {"name": "Name", "id": "name"},
+            {"name": "Cost", "id": "cost"},
+            {"name": "Note", "id": "note"},
+            {"name": "Date", "id": "date"}
+        ]
+        return data, columns, card_content, card_color
 
 
 @app.callback(
@@ -253,10 +300,77 @@ def create_item_callback(name, cost, note, n_click):
 
     return ""
 
+@app.callback(
+    Output("edit_item_placeholder", "value"),
+    Input("edit_envelope_item_name", "value"),
+    Input("edit_envelope_item_cost", "value"),
+    Input("edit_item_text_area", "value"),
+    Input("edit_item_button", "n_clicks"),
 
+)
+def update_item_callback(new_name, new_cost, new_note, n_click):
+    id = ctx.triggered_id
+    print(id)
+    if id == "edit_item_button":
+        envelope_name = db.user.current_envelope["name"]
+        # print(envelope_name)
+        # i = db.user.envelopes_df[db.user.envelopes_df["name"] == envelope_name]
+        # # print(i["items"].head())
+        # # print(i[i["id"]])
+        # # db.update_item_cost(envelope_name, item_name, new_cost)
+        # # db.reload_db()
+        # def get_id(my_dict):
+        #     return my_dict['id']
 
+        # # apply function to dataframe
+        # df['id'] = i['my_dict'].apply(get_id)
 
+        # # display resulting dataframe
+        # print(df)
+    else:
+        PreventUpdate
 
+    return ""
+
+############################
+# BUDGET CREATION CALLBACK #
+############################
+@app.callback(
+    Output('age_inputs_container', 'children'),
+    Input('family_size', 'value')
+)
+def generate_age_inputs(family_size):
+    if not family_size:
+        return []
+
+    age_inputs = []
+    for i in range(family_size):
+        age_inputs.append(
+            dcc.Input(
+                id=f'age_input_{i}',
+                type='number',
+                placeholder=f'Enter age for family member {i+1}',
+                className='form-control mb-3'
+            )
+        )
+    return age_inputs
+
+@app.callback(
+    Output('url', 'pathname'),
+    Input('confirm_button', 'n_clicks'),
+    State('family_size', 'value'),
+    State('age_inputs_container', 'children'),
+    State('savings_level', 'value')
+)
+def automatic_budget_creation_callback(n_clicks, family_size, age_inputs, savings_level):
+    if not n_clicks:
+        raise dash.exceptions.PreventUpdate
+
+    # Extract age inputs
+    ages = [int(input_element['props']['value']) for input_element in age_inputs]
+
+    # Call function to create budget
+    automatic_budget_creation(family_size, ages, savings_level)
 
 
 
@@ -288,6 +402,10 @@ def display_page(pathname):
         return create_edit_item_layout()
     elif pathname == '/add_item':
         return create_add_item_layout()
+    elif pathname == '/questioneer_decision':
+        return create_questioneer_decision()
+    elif pathname == '/questioneer_layout':
+        return create_questioneer_layout()
     else:
         return '404 Page not found'
 
@@ -299,4 +417,4 @@ html.Div(id='page-content')
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)

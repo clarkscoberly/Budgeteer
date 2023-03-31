@@ -30,6 +30,7 @@ def create_envelope_layout(title, budget):
                             html.H4("Budget", className="card-title"),
                             html.P(budget, className="card-text"),
                         ],
+                        id="envelope_budget_card" ,
                         body=True,
                         color="info",
                         inverse=True,

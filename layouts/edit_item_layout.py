@@ -8,10 +8,11 @@ def create_edit_item_layout():
         ]),
         dbc.Row([
             dbc.Col([
-                dbc.Row(dbc.Input(id="envelope_item_name", placeholder="Payee (Who Recieved Payment?)", type="text"), style={"width" : "50%", "margin" : "auto", "padding-bottom" : "20px"}),
-                dbc.Row(dbc.Input(id="envelope_item_cost", placeholder="Amount", type="number"), style={"width" : "50%", "margin" : "auto", "padding-bottom" : "20px"}),
-                dbc.Row(dbc.Textarea(placeholder="Enter a description of the expense if you'd like...", id='item_text_area', style={"width" : "60%", "margin" : "auto", "padding-bottom" : "20px"})),
-                dbc.Row(dbc.Button('Save', id='save_item_button', className='btn btn-primary mt-2', style={"width" : "25%", "margin" : "auto"}, href="/envelope"))
+                dbc.Row(dbc.Input(id="edit_envelope_item_name", placeholder="Payee (Who Recieved Payment?)", type="text"), style={"width" : "50%", "margin" : "auto", "padding-bottom" : "20px"}),
+                dbc.Row(dbc.Input(id="edit_envelope_item_cost", placeholder="Amount", type="number"), style={"width" : "50%", "margin" : "auto", "padding-bottom" : "20px"}),
+                dbc.Row(dbc.Textarea(placeholder="Enter a description of the expense if you'd like...", id='edit_item_text_area', style={"width" : "60%", "margin" : "auto", "padding-bottom" : "20px"})),
+                dbc.Row(dbc.Button('Save', id='edit_item_button', className='btn btn-primary mt-2', style={"width" : "25%", "margin" : "auto"}, href="/envelope")),
+                html.H1(id="edit_item_placeholder"),
             ], width=12),
         ])
     ], fluid=True)
